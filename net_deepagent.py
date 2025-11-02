@@ -34,10 +34,7 @@ action_minimal_thinking_model = ChatOpenAI(model="gpt-5-mini", api_key=creds.OPE
 multi_purpose_model = ChatOpenAI(model="gpt-4.1", api_key=creds.OPENAI_KEY)
 bias_removal_model = ChatAnthropic(model="claude-4", api_key=creds.ANTHROPIC_KEY)
 
-#r= thinking_model.invoke("what is the capital city of Australia?")
-r1= action_minimal_thinking_model.invoke("what is the capital city of Australia?")
-print(r1)
-#print(r)
+
 
 async def main():
 
@@ -53,12 +50,7 @@ async def main():
     )
     tools = await client.get_tools()
 
-    ## agents testing
-    #agent = create_agent(thinking_model, tools)
-    #math_response = await agent.ainvoke({"messages": "what's (3 + 5) x 12?"})
-    #print(math_response)
-    #network_response = await agent.ainvoke({"messages": "what are interface on device with IP 10.10.10.1"})
-    #print(network_response)
+
 
     ## Create Subagents 
     LAN_subagent = {
