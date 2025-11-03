@@ -17,3 +17,12 @@ def clarification_from_user(question: str) -> str:
     """ask for clarification from user when agent is unsure about next steps"""
     answer = input(f"Agent needs clarification: {question}\nUser input: ")
     return answer     
+
+@tool
+def onliine_knowledge_acquisition_tool(subject_to_search: str) -> str:
+    """Acquire knowledge from  internet sources for a given subject"""
+    # 1. First remove any personal identifiable information from the subject_to_search
+    # 2. Remove any company specific internal information from the subject_to_search
+    # 3. run a search and summarize the findings
+    acquired_info = f"Summary of findings on : This is what we got from internet"
+    return f"Acquired knowledge on <browser> {acquired_info} </browser> from online sources."
