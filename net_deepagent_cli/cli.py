@@ -21,14 +21,18 @@ async def run_cli():
     parser.add_argument("--auto-approve", action="store_true", help="Auto-approve all tool calls")
     parser.add_argument("--automatic-context-detection", action="store_true", help="Proactively detect topic drift")
     parser.add_argument("--association-window", type=int, default=5, help="Lookback window for past session association in days")
-    parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], help="Set the logging level")
+    parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "NOTICE", "WARNING", "ERROR", "CRITICAL"], help="Set the log level for file logging")
+    parser.add_argument("--monitor", default=None, choices=["DEBUG", "INFO", "NOTICE", "WARNING", "ERROR", "CRITICAL"], help="Set the log level for screen/console output only (default: matches --log-level)")
     parser.add_argument("--hashicorp", action="store_true", help="Use HashiCorp Vault for credentials")
     
     args = parser.parse_args()
 
-    # Set log level immediately
-    from net_deepagent_cli.communication.logger import set_log_level
+    # Set log levels immediately
+    from net_deepagent_cli.communication.logger import set_log_level, set_screen_log_level
     set_log_level(args.log_level)
+    # Screen level: --monitor if provided, else fall back to --log-level
+    screen_level = args.monitor if args.monitor is not None else args.log_level
+    set_screen_log_level(screen_level)
     
     # Load or create config
     config_manager = AgentConfig(args.agent)
