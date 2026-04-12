@@ -15,6 +15,8 @@ A living reference of the features supported by the `net_deepagent_cli`.
 | Human-in-the-loop clarification | Agent can ask user questions via `user_clarification_and_action_tool` |
 | Auto-approve mode | `--auto-approve` CLI flag bypasses approval prompts |
 | Skill Management CLI | `workerxy skill <args>` — Launches the skill-manager CLI |
+| Independent Screen Logging | `--monitor <LEVEL>` — Set console level separately from file level |
+| Custom `NOTICE` Level | Level `25` (between INFO/WARNING) — supported in all logging flags |
 
 ---
 
@@ -165,7 +167,7 @@ Decoupled communication system for remote agent interaction via Discord and Rabb
 - **Mention-to-Job**: Mentioning the bot on Discord automatically creates a job for the agent.
 - **Automatic Replies**: The agent's final textual response is automatically sent back to the Discord channel where it was mentioned.
 - **Channel Routing**: Supports routing messages to specific channels by name (e.g., `Network-jobs`).
-- **Structured Logging**: All activity (screen + file) is logged to `logs/communication.log`.
+- **Structured Logging**: All activity is logged to `~/.net-deepagent/logs/main.log`. Use `--log-level` (default INFO) to control file detail, and `--monitor` (default matches log-level) to control screen detail.
 - **Worker Mode**: `headless.py` allows the agent to run 24/7 as a background worker without a terminal UI.
 
 ---

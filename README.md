@@ -85,11 +85,15 @@ Standard headless execution without the association overhead:
 workerxy headless --model gpt-5.1-medium --subagent-model gpt-5.1-no-thinking
 ```
 
-### 🔇 Less Noisy Logging
-For a cleaner terminal experience, use the `warning` log level:
+### 🔇 Independent Logging
+Control screen and file logging levels independently. Use the custom `NOTICE` level for a perfect balance of visibility:
 ```bash
-workerxy cli --log-level warning
+# Verbose file logging (DEBUG) but cleaner screen (NOTICE)
+workerxy cli --log-level DEBUG --monitor NOTICE
 ```
+- `--log-level`: Sets the level for the file log (`~/.net-deepagent/logs/main.log`).
+- `--monitor`: Sets the level for the screen/console output only.
+- Available levels: `DEBUG`, `INFO`, `NOTICE` (25), `WARNING`, `ERROR`, `CRITICAL`.
 
 ---
 
