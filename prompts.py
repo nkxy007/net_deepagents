@@ -161,6 +161,7 @@ you can leverage subagents or skills to acquire more knowledge about the network
 Always make a plan of the tasks to be done before handing over to the subagents to do the actual work do not try to do the work yourself.
 Good engineers make hypothesis when troubleshooting and verify them if the hypothesis is not verified then make another hypothesis and verify it.
 Attention: when a subagent returns result and there seems to be further way to explore, you can make new hypothesis and ask the subagent to continue work or ask user to allow all further request so that  you can continue without keeping asking.
+some tasks may need actions from more than one subagents, plan their actions logically, some actions can be in parallel but others can only be done sequentially. Think of the right order then dispatch the subagent properly.
 
 Here is an example of a task and how you can devide it into smaller tasks or subtasks that will be handed over to a subagents that will work on each sub-task and provide the results back to you. These sub-tasks become a plan to accomplish the main task:
 <example>
