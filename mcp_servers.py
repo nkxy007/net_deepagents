@@ -6,7 +6,7 @@
 from typing import List, Optional, Dict, Any
 from mcp.server.fastmcp import FastMCP
 import json
-import paramiko
+from utils.ssh_executor import DeviceSSHSession, DEVICE_PROFILES
 import re
 import logging
 import sys
@@ -105,94 +105,7 @@ def log_tool_call_to_csv(tool_name: str, intention: str, **kwargs):
         logger.error(f"Error logging tool call to CSV: {e}")
 
 
-class DeviceSShSession:
-    def __init__(self, management_ip: str, username: Optional[str] = None, password: Optional[str] = None, model="cisco"):
-        self.management_ip = management_ip
-        self.username = username or os.environ.get("DEVICES_SSH_USERNAME", "admin")
-        self.password = password or os.environ.get("DEVICES_SSH_PASSWORD", "password")
-        self.model = model
-        self.fire_n_forget = False
-        logger.debug(f"DeviceSShSession initialized for {management_ip} with model {self.model} and username {self.username}")
 
-    def execute_command(self, command: str) -> str:
-        # create ssh connection to the device and execute the command, set timeout to 5 seconds, and change buffer to 15000
-        try:
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(self.management_ip, username=self.username, password=self.password, timeout=5)
-            if not "\n" in command:
-                command += " \n"
-            if not "?" in command and self.fire_n_forget:
-                ssh.exec_command("terminal length 0\n")
-                stdin, stdout, stderr = ssh.exec_command(command)
-                time.sleep(0.5)
-                output = stdout.read(15000).decode()
-            else:
-                shell = ssh.invoke_shell()
-                time.sleep(1)
-
-                # Clear initial banner
-                if shell.recv_ready():
-                    logger.info(shell.recv(65535).decode())
-                # Send command with ?
-                if self.model == "cisco":
-                    shell.send("terminal length 0\n")
-                    time.sleep(0.5)
-                shell.send(command)
-                time.sleep(3)
-
-                output = ""
-                while shell.recv_ready():
-                    output += shell.recv(65535).decode()
-            ssh.close()
-            return output
-        except Exception as e:
-            logger.error(f"SSH command execution failed: {e}\n{traceback.format_exc()}")
-            return f"Error executing command: {e}"
-    
-    def execute_privileged_command(self, command: str) -> str:
-        try:
-            ssh = paramiko.SSHClient()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(self.management_ip, username=self.username, password=self.password, timeout=5)
-            if not "\n" in command:
-                command += " \n"
-            if not "?" in command and self.fire_n_forget:
-                ssh.exec_command("terminal length 0\n")
-                time.sleep(0.5)
-                ssh.exec_command("enable\n")
-                time.sleep(0.5)
-                stdin, stdout, stderr = ssh.exec_command(command)
-                output = stdout.read(15000).decode()
-            else:
-                shell = ssh.invoke_shell()
-                time.sleep(1)
-
-                # Clear initial banner
-                if shell.recv_ready():
-                    logger.info(shell.recv(65535).decode())
-                # Send command with ?
-                if self.model=="cisco":
-                    shell.send("enable\n")
-                    time.sleep(0.5)
-                    shell.send("terminal length 0\n")
-                    time.sleep(0.5)
-                time.sleep(0.5)
-                shell.send(command)
-                time.sleep(3)
-
-                output = ""
-                while shell.recv_ready():
-                    output += shell.recv(65535).decode()
-            
-            ssh.close()
-            return output
-        except Exception as e:
-            logger.error(f"Privileged SSH command execution failed: {e}\n{traceback.format_exc()}")
-            return f"Error executing command: {e}"
-
-
-        
 @mcp.tool()
 async def get_site_info(site_name: str, intention: str) -> str:
     """Get site information or site inventory. This is information about site details, such as devices
@@ -276,7 +189,7 @@ async def net_find_network_interfaces(device_management_ip: str, intention: str)
     log_tool_call_to_csv(net_find_network_interfaces.__name__, intention, device_management_ip=device_management_ip)
     logger.info(f"Finding network interfaces for device: {device_management_ip}")
     try:
-        device = DeviceSShSession(device_management_ip)
+        device = DeviceSSHSession(device_management_ip)
         interfaces_with_ip = device.execute_command("show ip interfaces brief | exclude unassigned")
         interface_physical = device.execute_command("show interface status")
         result = interfaces_with_ip + "\n" + interface_physical
@@ -318,7 +231,7 @@ async def net_get_network_device_arp_table(device_management_ip: str, intention:
     log_tool_call_to_csv(net_get_network_device_arp_table.__name__, intention, device_management_ip=device_management_ip)
     logger.info(f"Getting ARP table for device: {device_management_ip}")
     try:
-        device = DeviceSShSession(device_management_ip)
+        device = DeviceSSHSession(device_management_ip)
         arp_table = device.execute_command("show ip arp")
         result = [line for line in arp_table.splitlines("\n") if line.strip()]
         logger.debug(f"Tool net_get_network_device_arp_table output: {result}")
@@ -341,7 +254,7 @@ async def net_get_switch_mac_address_table(device_management_ip: str, intention:
     log_tool_call_to_csv(net_get_switch_mac_address_table.__name__, intention, device_management_ip=device_management_ip)
     logger.info(f"Getting MAC address table for device: {device_management_ip}")
     try:
-        device = DeviceSShSession(device_management_ip)
+        device = DeviceSSHSession(device_management_ip)
         mac_table = device.execute_command("show mac address-table")
         result = [line for line in mac_table.splitlines("\n") if line.strip()]
         logger.debug(f"Tool net_get_switch_mac_address_table output: {result}")
@@ -364,7 +277,7 @@ async def net_get_l2_forwarding_information(device_management_ip: str, intention
         logger.info(f"Intention: {intention}")
         log_tool_call_to_csv(net_get_l2_forwarding_information.__name__, intention, device_management_ip=device_management_ip)
         logger.info(f"Getting L2 forwarding info for device: {device_management_ip}")
-        device = DeviceSShSession(device_management_ip)
+        device = DeviceSSHSession(device_management_ip)
         # retrieve trunking and spanning tree info via ssh command
         trunking_info = device.execute_command("show interfaces trunk")
         spanning_tree_info = device.execute_command("show spanning-tree")
@@ -390,7 +303,7 @@ async def net_get_nat_table(router_management_ip: str, intention: str) -> List[s
     log_tool_call_to_csv(net_get_nat_table.__name__, intention, router_management_ip=router_management_ip)
     logger.info(f"Getting NAT table for router: {router_management_ip}")
     try:
-        device = DeviceSShSession(router_management_ip)
+        device = DeviceSSHSession(router_management_ip)
         nat_table = device.execute_command("show ip nat translations")
         result = [line for line in nat_table.splitlines("\n") if line.strip()]
         logger.debug(f"Tool net_get_nat_table output: {result}")
@@ -413,7 +326,7 @@ async def net_get_routing_table(router_management_ip: str, intention: str) -> st
     log_tool_call_to_csv(net_get_routing_table.__name__, intention, router_management_ip=router_management_ip)
     logger.info(f"Getting routing table for router: {router_management_ip}")
     try:
-        device = DeviceSShSession(router_management_ip)
+        device = DeviceSSHSession(router_management_ip)
         routing_table = device.execute_command("show ip route")
         result = f"routing table for router {router_management_ip}:\n{routing_table.splitlines('\n')}"
         logger.debug(f"Tool net_get_routing_table output: {result}")
@@ -440,7 +353,7 @@ async def net_capture_network_traffic(device_management_ip: str, interface: str,
     log_tool_call_to_csv(net_capture_network_traffic.__name__, intention, device_management_ip=device_management_ip, interface=interface, duration_seconds=duration_seconds)
     logger.info(f"Capturing network traffic on {device_management_ip} interface {interface} for {duration_seconds}s")
     try:
-        device = DeviceSShSession(device_management_ip)
+        device = DeviceSSHSession(device_management_ip)
         if device_model := device.execute_command("show version | include Model number"):
             logger.info(f"Device model is {device_model}")
         if "cisco" in device_model.lower():
@@ -490,7 +403,7 @@ async def net_get_device_logs(device_management_ip: str, log_type: str, time_ran
     log_tool_call_to_csv(net_get_device_logs.__name__, intention, device_management_ip=device_management_ip, log_type=log_type, time_range=time_range, filter_regex=filter_regex)
     logger.info(f"Getting device logs for {device_management_ip} (type={log_type}, range={time_range})")
     try:
-        device = DeviceSShSession(device_management_ip)
+        device = DeviceSSHSession(device_management_ip)
         # retrieve logs via ssh command
         if log_type.lower() == "error":
             log_level = "-4-.*"
@@ -518,23 +431,25 @@ async def net_get_device_logs(device_management_ip: str, log_type: str, time_ran
         return result
 
 @mcp.tool()
-async def net_run_commands_on_device(device_management_ip: str, commands: List[str], intention: str, privileged: bool = False, model: str = "cisco") -> str:
+async def net_run_commands_on_device(device_management_ip: str, commands: List[str], intention: str, confidence: float, privileged: bool = False, model: str = "cisco") -> str:
     """Run a command on a network device via SSH
     args:
         device_management_ip (str): management IP of the device
         commands (List[str]): list of commands to execute on the device
         intention (str): llm intention to call this tool
+        confidence (float): confidence level of the model in the commands generated
         privileged (bool): whether to run the command in privileged mode
-        model (str): model of the device default is cisco
+        model (str): model of the device default is cisco, juniper, nokia, arista, paloalto, huawei, hpe_comware, hpe_procurve, fortinet
     returns:
         str: output of the command execution
     """
     logger.debug(f"Executing tool: net_run_commands_on_device with args: device_management_ip={device_management_ip}, commands={commands}, privileged={privileged}")
     logger.info(f"Intention: {intention}")
+    logger.info(f"Confidence: {confidence}")
     log_tool_call_to_csv(net_run_commands_on_device.__name__, intention, device_management_ip=device_management_ip, commands=commands)
     logger.info(f"Running commands on {device_management_ip}: {commands}")
     try:
-        device = DeviceSShSession(device_management_ip, model=model)
+        device = DeviceSSHSession(device_management_ip, model=model)
         output = ""
         if privileged:
             for command in commands:
@@ -1087,10 +1002,14 @@ async def cloud_ssh_tool(management_ip: str, cloud_provider: str, command: List[
     logger.info(f"Intention: {intention}")
     log_tool_call_to_csv(cloud_ssh_tool.__name__, intention, management_ip=management_ip, cloud_provider=cloud_provider, command=command)
     try:
-        device = DeviceSShSession(management_ip, model="linux")
-        device.username = os.environ.get("CLOUD_DESKTOP_USER","admin")
-        device.password = os.environ.get("CLOUD_DESKTOP_PASSWORD","password")
-        logger.info(f"Connecting to {cloud_provider} VM at {management_ip} as {device.username}")
+        username = os.environ.get("CLOUD_DESKTOP_USER", "admin")
+        device = DeviceSSHSession(
+            management_ip,
+            model="linux",
+            username=username,
+            password=os.environ.get("CLOUD_DESKTOP_PASSWORD", "password"),
+        )
+        logger.info(f"Connecting to {cloud_provider} VM at {management_ip} as {username}")
         output = ""
         for cmd in command:
             logger.info(f"Executing command: {cmd}")
@@ -1118,10 +1037,14 @@ async def linux_server_ssh_tool(management_ip: str, command: List[str], intentio
     logger.info(f"Intention: {intention}")
     log_tool_call_to_csv(linux_server_ssh_tool.__name__, intention, management_ip=management_ip, command=command)
     try:
-        device = DeviceSShSession(management_ip, moddel="linux")
-        device.username = os.environ.get("SERVER_USERNAME","admin")
-        device.password = os.environ.get("SERVER_PASSWORD","password")
-        logger.info(f"Connecting to Linux server at {management_ip} as {device.username}")
+        username = os.environ.get("SERVER_USERNAME", "admin")
+        device = DeviceSSHSession(
+            management_ip,
+            model="linux",
+            username=username,
+            password=os.environ.get("SERVER_PASSWORD", "password"),
+        )
+        logger.info(f"Connecting to Linux server at {management_ip} as {username}")
         output = ""
         for cmd in command:
             logger.info(f"Executing command: {cmd}")

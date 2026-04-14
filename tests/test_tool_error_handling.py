@@ -11,7 +11,7 @@ from mcp_servers import (
 )
 
 @pytest.mark.asyncio
-@patch('mcp_servers.DeviceSShSession')
+@patch('mcp_servers.DeviceSSHSession')
 async def test_mcp_tool_catches_ssh_exception(mock_ssh_session_class):
     """Test that networking tools catch exceptions and return error strings rather than raising."""
     
@@ -39,7 +39,7 @@ async def test_mcp_tool_catches_ssh_exception(mock_ssh_session_class):
     assert "ConnectionError" in result_3
 
 @pytest.mark.asyncio
-@patch('mcp_servers.DeviceSShSession')
+@patch('mcp_servers.DeviceSSHSession')
 async def test_mcp_tool_catches_init_exception(mock_ssh_session_class):
     """Test that networking tools catch exceptions during session initialization."""
     

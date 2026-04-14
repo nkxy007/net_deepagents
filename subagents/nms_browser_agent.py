@@ -35,7 +35,7 @@ nms_browser_agent = {
     "description": (
         "Use this subagent when the task requires navigating a GUI NMS with no API endpoint available in our skillset"
         "(SolarWinds, PRTG, Zabbix, etc.) or researching vendor documentation, "
-        "configuration guides, or CVEs on the web. Do Not Use it for API calls."
+        "configuration guides, or CVEs on the web. Do Not Use it for API calls or for internet search."
     ),
     "system_prompt": NMS_BROWSER_PROMPT,
     "tools": [nms_browser],
