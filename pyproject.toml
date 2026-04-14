@@ -16,7 +16,7 @@ dependencies = [
     "ipython",
     "requests",
     "typing-extensions",
-    "deepagents",
+    "deepagents=0.3.12",
     "langchain-mcp-adapters",
     "google-generativeai",
     "trustcall",
