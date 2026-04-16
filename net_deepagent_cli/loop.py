@@ -126,6 +126,7 @@ async def interactive_loop(agent, args, ui: TerminalUI):
             
             # 2. Check for Topic Drift
             if drift_detector and messages:
+                print("⚙ Understanding the task connection to current context .....")
                 drift_info = await drift_detector.check_drift(messages, user_input)
                 # Log detailed info as requested
                 logger.info(f"Topic Drift Check: Similarity={drift_info['similarity']:.2f}, "
