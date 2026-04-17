@@ -34,9 +34,7 @@ import httpx
 import yaml
 from pathlib import Path
 from mcp.server.fastmcp import FastMCP
-from evengsdk.client import EvengClient
-from evengsdk.cli.lab.topology import Topology
-import evengsdk.cli.lab.commands as lab_commands
+from utils.eveng_helper import EvengClient, TopologyBuilder
 import argparse
 import sys
 
@@ -144,10 +142,7 @@ def _get_eveng_client() -> EvengClient:
     port = int(_cfg("EVE_NG_PORT", "80"))
     user = _cfg("EVE_NG_USERNAME", "admin")
     password = _cfg("EVE_NG_PASSWORD", "eve")
-    client = EvengClient(host, port=port, protocol=proto, ssl_verify=_ssl_verify())
-    if not _ssl_verify():
-        client.disable_insecure_warnings()
-    client.login(username=user, password=password)
+    client = EvengClient(host, port=port, protocol=proto, ssl_verify=_ssl_verify(), username=user, password=password)
     return client
 
 @mcp.tool(description="Test connectivity and authentication against the EVE-NG server.")
@@ -267,7 +262,7 @@ def eveng_create_lab(name: str, description: str = "", path: str = "/") -> str:
     log.debug(f"Executing tool: eveng_create_lab with args: name={name}, description={description}, path={path}")
     client = _get_eveng_client()
     try:
-        resp = client.api.create_lab(name=name, description=description, path=path)
+        resp = client.create_lab(name=name, description=description, path=path)
         result = json.dumps(resp, indent=2)
         log.debug(f"Tool eveng_create_lab output: {result}")
         return result
@@ -324,7 +319,7 @@ def eveng_add_network(lab_path: str, name: str, network_type: str = "bridge", vi
     log.debug(f"Executing tool: eveng_add_network with args: lab_path={lab_path}, name={name}, network_type={network_type}, visibility={visibility}")
     client = _get_eveng_client()
     try:
-        resp = client.api.add_lab_network(lab_path, name=name, network_type=network_type, visibility=visibility)
+        resp = client.add_lab_network(path=lab_path, name=name, network_type=network_type, visibility=visibility)
         result = json.dumps(resp, indent=2)
         log.debug(f"Tool eveng_add_network output: {result}")
         return result
@@ -422,7 +417,7 @@ def eveng_add_node(lab_path: str, name: str, template: str, image: str, left: in
     log.debug(f"Executing tool: eveng_add_node with args: lab_path={lab_path}, name={name}, template={template}, image={image}, left={left}, top={top}")
     client = _get_eveng_client()
     try:
-        resp = client.api.add_node(lab_path, name=name, template=template, image=image, left=left, top=top)
+        resp = client.add_node(path=lab_path, name=name, template=template, image=image, left=left, top=top)
         result = json.dumps(resp, indent=2)
         log.debug(f"Tool eveng_add_node output: {result}")
         return result
@@ -451,37 +446,9 @@ def eveng_build_topology_from_yaml(yaml_path: str, template_dir: str = "") -> st
         
     client = _get_eveng_client()
     try:
-        # Load topology
-        topology_data = yaml.safe_load(Path(yaml_path).read_text())
-        topology = Topology(topology_data)
-        
-        # Validate
-        if errors := topology.validate():
-             result = f"Topology validation failed: {errors}"
-             log.debug(f"Tool eveng_build_topology_from_yaml output: {result}")
-             return result
-             
-        # Build node configs if needed
-        # Default to 'templates' dir relative to yaml if not specified
         t_dir = template_dir if template_dir else "templates"
-        topology.build_node_configs(template_dir=t_dir)
-        
-        # Set the global client for the CLI worker functions
-        lab_commands.client = client
-        
-        # Deploy lab
-        resp = client.api.create_lab(**topology.lab)
-        if resp["status"] != "success":
-             result = f"Error creating lab: {resp.get('message')}"
-             log.debug(f"Tool eveng_build_topology_from_yaml output: {result}")
-             return result
-             
-        # Deploy components
-        # Note: These use ThreadPoolExecutor internally
-        lab_commands.create_and_configure_nodes(topology)
-        lab_commands.create_networks(topology)
-        lab_commands.create_network_links(topology)
-        lab_commands.create_p2p_links(topology)
+        builder = TopologyBuilder(client, template_dir=t_dir)
+        builder.build(yaml_path)
         
         result = f"Successfully built topology from {yaml_path}"
         log.debug(f"Tool eveng_build_topology_from_yaml output: {result}")
@@ -1039,7 +1006,7 @@ async def _telnet_exchange(
                 chunk = await asyncio.wait_for(reader.read(4096), timeout=min(remaining, 0.5))
                 if not chunk:   # EOF
                     break
-                buf += chunk.decode(encoding, errors="replace")
+                buf += chunk if isinstance(chunk, str) else chunk.decode(encoding, errors="replace")
                 if prompt_re.search(buf):
                     break
             except asyncio.TimeoutError:
@@ -1108,7 +1075,7 @@ async def eveng_send_commands(
     except ValueError as e:
         log.error(f"Value Error in eveng_send_commands: {e}\n{traceback.format_exc()}")
         result = f"Error: {e}"
-        log.debug(f"Tool eveng_send_commands output: {result}")
+        log.error(f"Tool eveng_send_commands output: {result}")
         return result
 
     log.info("Connecting to %s console at %s:%d", node_name, host, port)
@@ -1128,11 +1095,11 @@ async def eveng_send_commands(
             f"Timeout connecting to {node_name} at {host}:{port}. "
             f"Verify the node is running and fully booted."
         )
-        log.debug(f"Tool eveng_send_commands output: {result}")
+        log.error(f"Tool eveng_send_commands output: {result}")
         return result
     except OSError as e:
         result = f"Connection error to {node_name} at {host}:{port} — {e}"
-        log.debug(f"Tool eveng_send_commands output: {result}")
+        log.error(f"Tool eveng_send_commands output: {result}")
         return result
 
 

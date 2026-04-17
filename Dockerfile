@@ -22,14 +22,13 @@ WORKDIR /app
 COPY pyproject.toml uv.lock /app/
 
 # Install dependencies using uv system environment (excluding eval tools)
-# Note: Since trulens and eve-ng are moved/removed from pyproject.toml, this solve will succeed.
+# Note: Since trulens is moved/removed from pyproject.toml, this solve will succeed.
 RUN uv pip install --system -r pyproject.toml
 
 # Install Playwright browsers
 RUN playwright install --with-deps chromium
 
-# Install eve-ng without dependencies to avoid ancient rich conflict
-RUN pip install --no-deps eve-ng==0.2.7
+
 
 # Copy application source code
 COPY . /app/

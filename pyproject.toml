@@ -50,9 +50,6 @@ eval = [
     "trulens-core",
     "trulens-providers-openai",
 ]
-lab = [
-    "eve-ng>=0.2.7",
-]
 
 [project.scripts]
 workerxy = "net_deepagent_cli.entrypoint:main"
