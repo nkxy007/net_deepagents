@@ -56,3 +56,17 @@ WorkerXY natively integrates with instant messaging platforms so you can directl
 *WorkerXY requesting permission to proceed by informing the team directly in Slack.*
 ![Slack Integration](screenshots/slack.jpeg)
 <br>
+
+## Cloud Integration
+
+WorkerXY can also interface with cloud services to run tasks on your cloud instance. 
+
+### AWS S3 Data Analysis
+*WorkerXY tackling a search and interpretation of data from an S3 bucket.*
+![AWS S3 Data Analysis](screenshots/aws_s3.png)
+<br>
+
+### AWS Lambda Monitoring
+*WorkerXY monitoring the performance and logs of an AWS Lambda function.*
+![AWS Lambda Monitoring](screenshots/lambda_function.png)
+<br>
