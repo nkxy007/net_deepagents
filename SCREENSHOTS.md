@@ -34,9 +34,8 @@ WorkerXY has deep integrations with network analysis and logging tools to aid in
 
 ### Autonomous Network Diagnostics
 *WorkerXY resolving a Jira ticket by autonomously reading network diagrams, extracting device management IPs, logging into devices to check BGP status, and updating the ticket with its findings.*
-<video src="screenshots/workerXY_bgp_task.mp4" controls="controls" style="max-width: 100%;">
-  Your browser does not support the video tag.
-</video>
+
+[🎬 Watch the WorkerXY BGP Autonomous Task video here](screenshots/workerXY_bgp_task.mp4)
 <br>
 
 ## ITSM Integrations
