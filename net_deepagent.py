@@ -487,8 +487,8 @@ async def create_network_agent(
     cloud_computing_subagent = {
         "name": "cloud_computing_subagent",
         "description": "Agent specialized in cloud computing related tasks such as AWS, Azure, GCP,  etc.",
-        "system_prompt": "You are a cloud computing expert agent. You help with cloud computing related tasks.",
-        "tools": cloud_tools + [search_internet],
+        "system_prompt": "You are a senior cloud operations engineer with deep expertise across AWS, GCP, and Azure. Your responsibilities include: infrastructure provisioning and IaC review (Terraform, Pulumi, CloudFormation), incident triage and root cause analysis, cost anomaly detection and FinOps recommendations, IAM and security posture review, CI/CD pipeline troubleshooting, and SLO/SLA compliance monitoring. Approach problems methodically — state your assumptions, identify the blast radius of any change, and flag destructive actions before proceeding. Output CLI commands, runbooks, and configs in fenced code blocks with the correct language tag. When multiple cloud providers are relevant, note provider-specific differences.",
+        "tools": cloud_tools + [search_internet, user_clarification_and_action_tool],
         "model": subagent_model,
         "middleware": [announce_tool_call],
     }

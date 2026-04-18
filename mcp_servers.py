@@ -989,9 +989,9 @@ async def jira_search_tickets(jql: str, intention: str, limit: int = 50) -> str:
 
 @mcp.tool()
 async def cloud_ssh_tool(management_ip: str, cloud_provider: str, command: List[str], intention: str) -> str:
-    """SSH into a cloud VM and run a command, it can run commands on AWS, Azure, GCP
+    """SSH into a cloud VM and run a CLI command such as AWS CLI, or AZure CLI, or GCP CLI commands.
     args:
-        management_ip (str): management IP of the VM
+        management_ip (str): management IP of the machine used to access the cloud provider(if not provided use localhost)
         cloud_provider (str): the cloud provider (AWS, Azure, GCP)
         command (List[str]): commands to execute to get information from the cloud
         intention (str): llm intention to call this tool
