@@ -469,7 +469,7 @@ with st.sidebar:
     st.caption("Powered by Advanced AI • v2.0")
 
 # Main content area
-st.title("CoworkerX Workspace")
+st.title("WorkerXY - CoworkerX Workspace")
 
 # Create main tabs
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["💬 Chat", "📦 Artifacts", "📡 Stream Logs", "⚠️ Errors", "🤖 A2A Agents"])
@@ -553,7 +553,7 @@ with tab1:
         user_input = st.text_input(
             "Type your message...",
             key="user_input",
-            placeholder="Ask me anything about your design documents...",
+            placeholder="Ask me anything about your network...",
             label_visibility="collapsed"
         )
     
