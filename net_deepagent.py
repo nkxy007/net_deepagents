@@ -463,7 +463,7 @@ async def create_network_agent(
         "system_prompt": "You are a knowledge acquisition expert agent. You help acquiring knowledge from various sources such as internet, expert user input, search and online documentation, etc. You get invoked only if there is a need to enhance the information given by the user or if clarification to what the user is asking can be acquired from the documents or from the user, in some cases where you have no knowledge you can run a tool to ask user for clarification. your goal is to acquire more knowledge and share with the main agent to help the main agent accomplish its task.",
         "tools": [search_internet, user_clarification_and_action_tool],
         "model": subagent_model,
-        "middleware": [announce_tool_call],
+        "middleware": [log_before_calling_model, log_after_model, announce_tool_call],
     }
 
     LAN_subagent = {
@@ -473,15 +473,7 @@ async def create_network_agent(
         "tools": lan_tools + [search_internet, user_clarification_and_action_tool],
         "model": subagent_model,
         "skills": get_network_skills(),
-        "middleware": [announce_tool_call],
-    }
-
-    network_design_subagent = {
-        "name": "network_design_subagent",
-        "description": "Agent specialized in network design and architecture tasks such as reading networkd diagram and reading design documents.",
-        "system_prompt": "You are a network design expert. You help analyzing design and architect of networks in diagrams and documents.",
-        "tools": design_tools,
-        "model": design_model,
+        "middleware": [log_before_calling_model, log_after_model, announce_tool_call],
     }
 
     cloud_computing_subagent = {
@@ -490,7 +482,7 @@ async def create_network_agent(
         "system_prompt": "You are a senior cloud operations engineer with deep expertise across AWS, GCP, and Azure. Your responsibilities include: infrastructure provisioning and IaC review (Terraform, Pulumi, CloudFormation), incident triage and root cause analysis, cost anomaly detection and FinOps recommendations, IAM and security posture review, CI/CD pipeline troubleshooting, and SLO/SLA compliance monitoring. Approach problems methodically — state your assumptions, identify the blast radius of any change, and flag destructive actions before proceeding. Output CLI commands, runbooks, and configs in fenced code blocks with the correct language tag. When multiple cloud providers are relevant, note provider-specific differences.",
         "tools": cloud_tools + [search_internet, user_clarification_and_action_tool],
         "model": subagent_model,
-        "middleware": [announce_tool_call],
+        "middleware": [log_before_calling_model, log_after_model,announce_tool_call],
     }
 
     # Integrate the design interpreter as a compiled subagent
@@ -550,7 +542,7 @@ async def create_network_agent(
     # Note: Compiled subagents currently ignore the middleware key in deepagents,
     # but we include them here for completeness and future-proofing.
     for _sa in subagents:
-        _sa["middleware"] = [announce_tool_call]
+        _sa["middleware"] = [log_before_calling_model, log_after_model, announce_tool_call]
 
 
     ## create deep agent
