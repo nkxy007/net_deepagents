@@ -60,6 +60,14 @@ googla_light_model = LLMFactory.get_llm(model_name="gemini-3-flash-preview", api
 googla_heavy_model = LLMFactory.get_llm(model_name="gemini-3-pro", api_key=get_credential("GEMINI_KEY"))
 gui_navigator_model = LLMFactory.get_llm(model_name="gpt-4o", api_key=get_credential("OPENAI_KEY"))
 
+# New models (GPT-5.4, GPT-5.2, Gemini 3.1)
+gpt_5_4_model = LLMFactory.get_llm(model_name="gpt-5.4", api_key=get_credential("OPENAI_KEY"), use_responses_api=True)
+gpt_5_4_mini_model = LLMFactory.get_llm(model_name="gpt-5.4-mini", api_key=get_credential("OPENAI_KEY"), use_responses_api=True)
+gpt_5_4_nano_model = LLMFactory.get_llm(model_name="gpt-5.4-nano", api_key=get_credential("OPENAI_KEY"), use_responses_api=True)
+gpt_5_2_model = LLMFactory.get_llm(model_name="gpt-5.2", api_key=get_credential("OPENAI_KEY"), use_responses_api=True)
+gemini_3_1_flash_lite_model = LLMFactory.get_llm(model_name="gemini-3.1-flash-lite-preview", api_key=get_credential("GEMINI_KEY"))
+gemini_3_1_pro_model = LLMFactory.get_llm(model_name="gemini-3.1-pro-preview", api_key=get_credential("GEMINI_KEY"))
+
 
 # Global callback for user clarification (can be overridden by UI)
 _user_clarification_callback: Optional[Callable[[str, str], str]] = None
@@ -278,6 +286,12 @@ def filter_tools_by_category(tools: List[BaseTool], category: str) -> List[BaseT
 AVAILABLE_MODELS = {
     "gpt-5-mini": thinking_model_mini,
     "gpt-5.1": thinking_model,
+    "gpt-5.4": gpt_5_4_model,
+    "gpt-5.4-mini": gpt_5_4_mini_model,
+    "gpt-5.4-nano": gpt_5_4_nano_model,
+    "gpt-5.2": gpt_5_2_model,
+    "gemini-3.1-flash-lite": gemini_3_1_flash_lite_model,
+    "gemini-3.1-pro": gemini_3_1_pro_model,
     "gpt-5-response": thinking_model_response,
     "gpt-5-mini-minimal": action_minimal_thinking_model,
     "gpt-5.1-no-thinking": multi_purpose_model,
