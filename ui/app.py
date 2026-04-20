@@ -166,6 +166,61 @@ def run_async(coro):
         loop.close()
 
 
+def play_notification_sound(message: str = "WorkerXY has finished"):
+    """Inject browser-native audio notification via Web Audio API + speechSynthesis.
+
+    Plays a two-tone chime followed by a spoken announcement.
+    All audio is rendered in the user's browser — zero server-side dependencies.
+
+    Args:
+        message: Text spoken by the browser after the chime.
+    """
+    js = f"""
+    <script>
+    (function() {{
+        // Two-tone chime via AudioContext
+        try {{
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const now = ctx.currentTime;
+            // Note 1 — D5
+            const osc1 = ctx.createOscillator();
+            const gain1 = ctx.createGain();
+            osc1.frequency.value = 587.33;
+            osc1.type = 'sine';
+            gain1.gain.setValueAtTime(0.3, now);
+            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc1.connect(gain1).connect(ctx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.3);
+            // Note 2 — A5
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.frequency.value = 880;
+            osc2.type = 'sine';
+            gain2.gain.setValueAtTime(0.3, now + 0.15);
+            gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            osc2.connect(gain2).connect(ctx.destination);
+            osc2.start(now + 0.15);
+            osc2.stop(now + 0.5);
+        }} catch(e) {{ console.warn('AudioContext not available', e); }}
+
+        // Spoken announcement via speechSynthesis
+        try {{
+            if ('speechSynthesis' in window) {{
+                const utter = new SpeechSynthesisUtterance("{message}");
+                utter.rate = 1.1;
+                utter.pitch = 1.0;
+                utter.volume = 0.8;
+                // Delay so chime plays first
+                setTimeout(() => window.speechSynthesis.speak(utter), 600);
+            }}
+        }} catch(e) {{ console.warn('speechSynthesis not available', e); }}
+    }})();
+    </script>
+    """
+    components.html(js, height=0, width=0)
+
+
 # Initialize AgentService
 logger.info("Getting agent service...")
 agent_service = get_agent_service()
@@ -313,6 +368,13 @@ with st.sidebar:
     )
     
     # Removed start/stop buttons as Streamlit audio input does not require a backend daemon.
+
+    voice_notify = st.toggle(
+        "🔔 Voice Notify on Response",
+        value=True,
+        help="Play an audible chime + spoken announcement when the agent finishes responding",
+        key="voice_notify_toggle"
+    )
     
     st.markdown("---")
 
@@ -631,11 +693,23 @@ with tab1:
                 status.update(label="✅ Response complete!", state="complete")
                 logger.info("Status updated to complete")
 
+                # Voice notification on successful response
+                if voice_notify:
+                    play_notification_sound("WorkerXY has finished")
+                    # === PART 2 HOOKPOINT: TTS Response Readback ===
+                    # When voice_mode TTS is enabled, replace or supplement the
+                    # chime notification with a full readback of the response:
+                    #   play_tts_response(response_data["content"])
+
             except Exception as e:
                 logger.error(f"Error processing message: {str(e)}", exc_info=True)
                 st.error(f"Error processing message: {str(e)}")
                 import traceback
                 st.code(traceback.format_exc())
+
+                # Voice notification on error
+                if voice_notify:
+                    play_notification_sound("Error in response")
 
         logger.info("About to rerun Streamlit")
         st.rerun()
