@@ -2,11 +2,13 @@
 
 **The Ultimate AI Copilot for Network Operations & Automation.**
 
-WorkerXY is a high-performance, agentic AI system designed to streamline network diagnostics, cloud management, and datacenter operations. From troubleshooting BGP drifts to managing global AWS clusters, WorkerXY is your specialist operational companion.
+WorkerXY is a high-performance, agentic AI system designed to streamline network diagnostics, cloud management, and datacenter operations. From troubleshooting network and systems drifts to managing global AWS clusters, WorkerXY is your specialist operational companion.
 
-<p align="center">
-  <img src="screenshots/workerxy_page.png" alt="WorkerXY Dashboard" />
-</p>
+<div align="center">
+
+![WorkerXY Dashboard](screenshots/workerxy_page.png)
+
+</div>
 
 ---
 
