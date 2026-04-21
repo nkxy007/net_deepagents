@@ -172,19 +172,26 @@ def play_notification_sound(message: str = "WorkerXY has finished"):
     Plays a two-tone chime followed by a spoken announcement.
     All audio is rendered in the user's browser — zero server-side dependencies.
 
+    Key implementation details:
+    - A millisecond nonce forces Streamlit to re-render the iframe every call
+      (without it, identical HTML is deduplicated and JS won't re-execute).
+    - Speech is called immediately (no setTimeout) so it starts before
+      st.rerun() can destroy the iframe.
+
     Args:
         message: Text spoken by the browser after the chime.
     """
+    nonce = int(time.time() * 1000)
     js = f"""
     <script>
+    // nonce: {nonce}
     (function() {{
         // Two-tone chime via AudioContext
         try {{
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const now = ctx.currentTime;
-            // Note 1 — D5
-            const osc1 = ctx.createOscillator();
-            const gain1 = ctx.createGain();
+            var ctx = new (window.AudioContext || window.webkitAudioContext)();
+            var now = ctx.currentTime;
+            var osc1 = ctx.createOscillator();
+            var gain1 = ctx.createGain();
             osc1.frequency.value = 587.33;
             osc1.type = 'sine';
             gain1.gain.setValueAtTime(0.3, now);
@@ -192,9 +199,8 @@ def play_notification_sound(message: str = "WorkerXY has finished"):
             osc1.connect(gain1).connect(ctx.destination);
             osc1.start(now);
             osc1.stop(now + 0.3);
-            // Note 2 — A5
-            const osc2 = ctx.createOscillator();
-            const gain2 = ctx.createGain();
+            var osc2 = ctx.createOscillator();
+            var gain2 = ctx.createGain();
             osc2.frequency.value = 880;
             osc2.type = 'sine';
             gain2.gain.setValueAtTime(0.3, now + 0.15);
@@ -202,19 +208,26 @@ def play_notification_sound(message: str = "WorkerXY has finished"):
             osc2.connect(gain2).connect(ctx.destination);
             osc2.start(now + 0.15);
             osc2.stop(now + 0.5);
-        }} catch(e) {{ console.warn('AudioContext not available', e); }}
+        }} catch(e) {{ console.warn('chime error', e); }}
 
-        // Spoken announcement via speechSynthesis
-        try {{
-            if ('speechSynthesis' in window) {{
-                const utter = new SpeechSynthesisUtterance("{message}");
-                utter.rate = 1.1;
-                utter.pitch = 1.0;
-                utter.volume = 0.8;
-                // Delay so chime plays first
-                setTimeout(() => window.speechSynthesis.speak(utter), 600);
-            }}
-        }} catch(e) {{ console.warn('speechSynthesis not available', e); }}
+        // Spoken announcement — called immediately so it starts before
+        // st.rerun() can destroy this iframe. Try parent window first,
+        // then fall back to iframe window.
+        function doSpeak(win) {{
+            try {{
+                var synth = win.speechSynthesis;
+                if (!synth) return false;
+                synth.cancel();
+                var u = new win.SpeechSynthesisUtterance("{message}");
+                u.rate = 1.1;
+                u.pitch = 1.0;
+                u.volume = 0.8;
+                synth.speak(u);
+                return true;
+            }} catch(e) {{ return false; }}
+        }}
+        // Try parent first (survives iframe teardown), then self
+        if (!doSpeak(window.parent)) doSpeak(window);
     }})();
     </script>
     """
