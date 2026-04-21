@@ -23,6 +23,8 @@ class LLMFactory:
             return "google_genai"
         elif model_name_lower.startswith(("grok", "xai")):
             return "xai"
+        elif model_name_lower.startswith("openai/gpt-oss-120b"):
+            return "groq"
         # Default to openai for unrecognized prefixes
         return "openai"
 

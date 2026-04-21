@@ -38,6 +38,7 @@ from prompts import network_activity_planner_agent_template, LAN_subagent_templa
 
 from langchain.agents.middleware import PIIMiddleware
 from custom_middleware.netpii_middlewares import PIIPseudonymizationMiddleware
+from langchain.agents.middleware import ModelFallbackMiddleware
 
 
 
@@ -67,10 +68,14 @@ gpt_5_4_nano_model = LLMFactory.get_llm(model_name="gpt-5.4-nano", api_key=get_c
 gpt_5_2_model = LLMFactory.get_llm(model_name="gpt-5.2", api_key=get_credential("OPENAI_KEY"), use_responses_api=True)
 gemini_3_1_flash_lite_model = LLMFactory.get_llm(model_name="gemini-3.1-flash-lite-preview", api_key=get_credential("GEMINI_KEY"))
 gemini_3_1_pro_model = LLMFactory.get_llm(model_name="gemini-3.1-pro-preview", api_key=get_credential("GEMINI_KEY"))
+groq_model = LLMFactory.get_llm(model_name="openai/gpt-oss-120b", api_key=get_credential("GROQ_KEY"))
 
 
 # Global callback for user clarification (can be overridden by UI)
 _user_clarification_callback: Optional[Callable[[str, str], str]] = None
+
+# fallback Middleware 
+fallback_middleware = ModelFallbackMiddleware(gpt_5_4_nano_model,bias_removal_model,groq_model)
 
 
 def set_user_clarification_callback(callback: Optional[Callable[[str, str], str]]):
@@ -556,7 +561,7 @@ async def create_network_agent(
     # Note: Compiled subagents currently ignore the middleware key in deepagents,
     # but we include them here for completeness and future-proofing.
     for _sa in subagents:
-        _sa["middleware"] = [log_before_calling_model, log_after_model, announce_tool_call]
+        _sa["middleware"] = [log_before_calling_model, log_after_model, announce_tool_call, fallback_middleware]
 
 
     ## create deep agent
@@ -573,7 +578,7 @@ async def create_network_agent(
             model=main_model,
             backend=FilesystemBackend(),
             store=InMemoryStore(),
-            middleware=[log_before_calling_model, log_after_model, announce_tool_call] + (custom_middlewares or []),
+            middleware=[log_before_calling_model, log_after_model, announce_tool_call, fallback_middleware] + (custom_middlewares or []),
         )
         
         # Expose the raw LLM so the automata manager can bypass tool-calling when parsing schedules

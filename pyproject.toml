@@ -32,6 +32,7 @@ dependencies = [
     "langchain-chroma>=1.1.0",
     "langchain-community",
     "langchain-text-splitters",
+    "langchain-groq",
     "pypdf",
     "aio-pika>=9.0.0",
     "discord.py>=2.3.0",
