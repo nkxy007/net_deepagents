@@ -11,6 +11,12 @@ The WorkerXY Terminal User Interface (TUI) serves as the primary launchpad for i
 ![TUI Launchpad 1](screenshots/TUI_launchpad_1.png)
 <br>
 
+## Graphic User Interface (GUI)
+
+WorkerXY supports a graphic user interface too! You can directly access agents and view logs visually using the Streamlit dashboard.
+
+![WorkerXY GUI](screenshots/gui_basics.png)
+<br>
 ## Task Scheduling & Management
 
 You can seamlessly schedule and manage tasks for the agents directly through the interface.
