@@ -7,6 +7,8 @@ from pathlib import Path
 import uuid
 import logging
 import streamlit.components.v1 as components
+from PIL import Image
+
 
 # Configure logging
 logging.basicConfig(
@@ -34,9 +36,12 @@ logger.info("Streamlit UI Starting")
 logger.info("="*50)
 
 # Page configuration
+BASE_DIR = Path(__file__).parent
+img = Image.open(BASE_DIR / "favicon.png")
+
 st.set_page_config(
     page_title="WorkerXY AI Assistant",
-    page_icon="🎨",
+    page_icon=img,
     layout="wide",
     initial_sidebar_state="expanded"
 )
