@@ -160,12 +160,6 @@ cd workerxy
 # Install dependencies
 pip install -e .
 
-# (Optional) Install EVE-NG Lab tools
-# Note: eve-ng requires a legacy version of 'rich'. 
-# To avoid conflicts with modern tools, install it without dependencies:
-pip install --no-deps eve-ng==0.2.7
-
-```bash
 # Run the initialization script
 python initializer.py
 ```
