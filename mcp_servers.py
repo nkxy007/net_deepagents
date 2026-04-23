@@ -138,6 +138,37 @@ async def get_site_info(site_name: str, intention: str) -> str:
         return result
 
 @mcp.tool()
+async def get_design_info(design_name: str, intention: str) -> str:
+    """Get design information from a local JSON design file.
+    args:
+        design_name (str): name of the design file without the .json extension
+        intention (str): llm intention to call this tool
+    returns:
+        str: design content or "no design info" if the file does not exist
+    """
+    logger.debug(f"Executing tool: get_design_info with args: design_name={design_name}")
+    logger.info(f"Intention: {intention}")
+    log_tool_call_to_csv(get_design_info.__name__, intention, design_name=design_name)
+    logger.info(f"Getting design info for design: {design_name}")
+    try:
+        # Resolve the expanduser path to the target file
+        design_path = os.path.expanduser(f"~/.net-deepagent/design/{design_name}.json")
+        if os.path.isfile(design_path):
+            with open(design_path, "r") as f:
+                content = f.read()
+                logger.debug(f"Tool get_design_info output size: {len(content)} characters")
+                return content
+        else:
+            result = "no design info"
+            logger.warning(f"Tool get_design_info output: {result}")
+            return result
+    except Exception as e:
+        logger.error(f"Error retrieving design info: {e}\n{traceback.format_exc()}")
+        result = f"Error retrieving design info: {e}"
+        logger.debug(f"Tool get_design_info output: {result}")
+        return result
+
+@mcp.tool()
 async def net_get_devices_management_ip(site_name: str, device_type: str, intention: str) -> str:
     """Get management IP of a network device from a site, uses infor from CMDB, IPAM and NMS to get the info
     args:
