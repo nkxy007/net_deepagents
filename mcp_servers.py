@@ -138,17 +138,17 @@ async def get_site_info(site_name: str, intention: str) -> str:
         return result
 
 @mcp.tool()
-async def get_design_info(design_name: str, intention: str) -> str:
-    """Get design information from a local JSON design file.
+async def net_get_design_info_cache(design_name: str, intention: str) -> str:
+    """Get design information from a local design document cache.
     args:
-        design_name (str): name of the design file without the .json extension
+        design_name (str): name of the design document or design diagram with the extension i.e. design_name.pdf or design_name.png without .pdf or .png extension
         intention (str): llm intention to call this tool
     returns:
         str: design content or "no design info" if the file does not exist
     """
-    logger.debug(f"Executing tool: get_design_info with args: design_name={design_name}")
+    logger.debug(f"Executing tool: net_get_design_info with args: design_name={design_name}")
     logger.info(f"Intention: {intention}")
-    log_tool_call_to_csv(get_design_info.__name__, intention, design_name=design_name)
+    log_tool_call_to_csv(net_get_design_info_cache.__name__, intention, design_name=design_name)
     logger.info(f"Getting design info for design: {design_name}")
     try:
         # Resolve the expanduser path to the target file
@@ -156,16 +156,16 @@ async def get_design_info(design_name: str, intention: str) -> str:
         if os.path.isfile(design_path):
             with open(design_path, "r") as f:
                 content = f.read()
-                logger.debug(f"Tool get_design_info output size: {len(content)} characters")
+                logger.debug(f"Tool net_get_design_info_cache output size: {len(content)} characters")
                 return content
         else:
             result = "no design info"
-            logger.warning(f"Tool get_design_info output: {result}")
+            logger.warning(f"Tool net_get_design_info_cache output: {result}")
             return result
     except Exception as e:
         logger.error(f"Error retrieving design info: {e}\n{traceback.format_exc()}")
         result = f"Error retrieving design info: {e}"
-        logger.debug(f"Tool get_design_info output: {result}")
+        logger.error(f"Tool net_get_design_info_cache output: {result}")
         return result
 
 @mcp.tool()
