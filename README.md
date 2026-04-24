@@ -36,6 +36,15 @@ WorkerXY is a high-performance, agentic AI system designed to streamline network
 *   **Context Pruning**: Intelligent summarization as you approach token limits (85% threshold).
 *   **Input Protection**: Integrated guardrails to prevent prompt injections.
 
+### 🌐 Supported AI Providers
+WorkerXY integrates with the industry's leading language model providers:
+*   **OpenAI**: GPT-4o, GPT-5.1, GPT-5.4 series
+*   **Anthropic**: Claude 3.5, 4.5 Sonnet
+*   **Google Gemini**: Gemini 3 and 3.1 Pro/Flash
+*   **DeepSeek**: DeepSeek v4 Pro, Flash (with Reasoning Support)
+*   **xAI**: Grok series
+*   **Groq**: Blazing fast open-source inference
+
 ---
 
 ## 🎨 User Interfaces

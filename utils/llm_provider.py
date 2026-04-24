@@ -25,6 +25,8 @@ class LLMFactory:
             return "xai"
         elif model_name_lower.startswith("openai/gpt-oss-120b"):
             return "groq"
+        elif model_name_lower.startswith("deepseek"):
+            return "deepseek"
         # Default to openai for unrecognized prefixes
         return "openai"
 
@@ -49,6 +51,13 @@ class LLMFactory:
             kwargs.pop("reasoning", None)
 
         logger.info(f"Initializing LLM: model={model_name}, provider={provider}")
+
+        if provider == "deepseek":
+            from langchain_deepseek import ChatDeepSeek
+            return ChatDeepSeek(
+                model=model_name,
+                **kwargs
+            )
         
         return init_chat_model(
             model=model_name,

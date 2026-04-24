@@ -44,6 +44,7 @@ dependencies = [
     "slack-bolt",
     "google-genai",
     "hvac",
+    "langchain-deepseek",
 ]
 
 [project.optional-dependencies]

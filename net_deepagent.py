@@ -70,6 +70,10 @@ gemini_3_1_flash_lite_model = LLMFactory.get_llm(model_name="gemini-3.1-flash-li
 gemini_3_1_pro_model = LLMFactory.get_llm(model_name="gemini-3.1-pro-preview", api_key=get_credential("GEMINI_KEY"))
 groq_model = LLMFactory.get_llm(model_name="openai/gpt-oss-120b", api_key=get_credential("GROQ_KEY"))
 
+# DeepSeek Models
+deepseek_4_high_model = LLMFactory.get_llm(model_name="deepseek-v4-pro", api_key=get_credential("DEEPSEEK_API_KEY"), reasoning_effort="high")
+deepseek_4_flash_model = LLMFactory.get_llm(model_name="deepseek-v4-flash", api_key=get_credential("DEEPSEEK_API_KEY"))
+deepseek_4_medium_model = LLMFactory.get_llm(model_name="deepseek-v4-pro", api_key=get_credential("DEEPSEEK_API_KEY"), reasoning_effort="medium")
 
 # Global callback for user clarification (can be overridden by UI)
 _user_clarification_callback: Optional[Callable[[str, str], str]] = None
@@ -308,6 +312,9 @@ AVAILABLE_MODELS = {
     "gpt-5.1-high": thinking_model_high,
     "gpt-5-medium-mini": thinking_model_medium_mini,
     "gpt-5-high-mini": thinking_model_high_mini,
+    "deepseek-4-high": deepseek_4_high_model,
+    "deepseek-4-flash": deepseek_4_flash_model,
+    "deepseek-4-medium": deepseek_4_medium_model,
 }
 
 from langchain.agents.middleware import before_model, after_model, AgentState
