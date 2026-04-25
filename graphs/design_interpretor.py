@@ -11,7 +11,7 @@ import operator
 from pydantic import BaseModel, Field
 from langgraph.graph import START, END, StateGraph
 from langchain_core.messages import AnyMessage, HumanMessage, AIMessage, SystemMessage
-from utils.ai_helper import AIHelper
+from utils.ai_helper import AIHelper, get_models_config
 
 # ---------------------------------------------------------------------------
 # Data Models (shared by both branches)
@@ -68,8 +68,9 @@ class DesignDocumentInfo(BaseModel):
 
 # ---------------------------------------------------------------------------
 # Model used by the RAG extraction step in the document branch.
-# Override by setting the RAG_LLM environment variable, falls back to gpt-5-mini.
-RAG_LLM: str = os.environ.get("RAG_LLM", "gpt-5-mini")
+# Override by setting the RAG_LLM environment variable, falls back to config.
+_config = get_models_config()
+RAG_LLM: str = os.environ.get("RAG_LLM", _config.get("rag_llm_image", "gpt-5-mini"))
 
 # ---------------------------------------------------------------------------
 # Comprehensive search topics for RAG-based document extraction

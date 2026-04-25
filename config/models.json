@@ -1,0 +1,8 @@
+{
+  "openai_image": "gpt-5-mini",
+  "openai-big_image": "gpt-5",
+  "claude_image": "claude-sonnet-4-5-20250929",
+  "gemini_image": "gemini-3.0-flash",
+  "grok_image": "grok-4-fast-reasoning",
+  "rag_llm_image": "gpt-5-mini"
+}
