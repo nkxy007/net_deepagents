@@ -478,9 +478,19 @@ async def create_network_agent(
         main_agent_tools = [t for t in tools if t.name in {m.name for m in main_agent_tools}]
 
     # Get models
-    main_model = AVAILABLE_MODELS.get(main_model_name, thinking_model_mini)
-    subagent_model = AVAILABLE_MODELS.get(subagent_model_name, action_minimal_thinking_model)
-    design_model = AVAILABLE_MODELS.get(design_model_name, multi_purpose_model)
+    def _resolve_model(m_name: str, fallback):
+        model = AVAILABLE_MODELS.get(m_name)
+        if model:
+            return model
+        if m_name.startswith("airgap"):
+            return LLMFactory.get_llm(model_name=m_name, api_key=get_credential("AIRGAP_API_KEY"))
+        elif m_name.startswith("ollama"):
+            return LLMFactory.get_llm(model_name=m_name)
+        return fallback
+
+    main_model = _resolve_model(main_model_name, thinking_model_mini)
+    subagent_model = _resolve_model(subagent_model_name, action_minimal_thinking_model)
+    design_model = _resolve_model(design_model_name, multi_purpose_model)
 
     ## Create Subagents
     knowledge_acquisition_subagent = {

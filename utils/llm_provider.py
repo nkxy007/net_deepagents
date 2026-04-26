@@ -27,6 +27,10 @@ class LLMFactory:
             return "groq"
         elif model_name_lower.startswith("deepseek"):
             return "deepseek"
+        elif model_name_lower.startswith("airgap"):
+            return "airgap"
+        elif model_name_lower.startswith("ollama"):
+            return "ollama"
         # Default to openai for unrecognized prefixes
         return "openai"
 
@@ -52,7 +56,37 @@ class LLMFactory:
 
         logger.info(f"Initializing LLM: model={model_name}, provider={provider}")
 
-        if provider == "deepseek":
+        if provider == "airgap":
+            from langchain_openai import ChatOpenAI
+            import httpx
+            from utils.credentials_helper import get_credential
+            
+            api_base = kwargs.pop("base_url", None) or get_credential("LLM_GATEWAY_URL")
+            http_client = httpx.Client(verify=False)
+            http_a_client = httpx.AsyncClient(verify=False)
+            
+            return ChatOpenAI(
+                model=model_name,
+                http_client=http_client,
+                http_async_client=http_a_client,
+                base_url=api_base,
+                **kwargs
+            )
+            
+        elif provider == "ollama":
+            from langchain_community.chat_models import ChatOllama
+            
+            # Extract the raw model tag, e.g. 'ollama-gemma4:31b' -> 'gemma4:31b'
+            extracted_model = model_name.split("ollama-", 1)[-1] if "ollama-" in model_name else model_name
+            api_base = kwargs.pop("base_url", None) or "http://localhost:11434"
+            
+            return ChatOllama(
+                model=extracted_model,
+                base_url=api_base,
+                **kwargs
+            )
+
+        elif provider == "deepseek":
             from langchain_deepseek import ChatDeepSeek
             return ChatDeepSeek(
                 model=model_name,
