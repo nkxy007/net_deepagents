@@ -13,10 +13,13 @@ async def run_cli():
     """Main CLI entry point logic"""
     parser = argparse.ArgumentParser(description="Net DeepAgent CLI - A powerful terminal interface for network automation.")
     
+    from net_deepagent import AVAILABLE_MODELS
+    model_hints = f"Available standard models: {', '.join(AVAILABLE_MODELS.keys())}. (Dynamic prefixes 'airgap-*' and 'ollama-*' are also supported)."
+    
     parser.add_argument("--agent", default="net-agent", help="Agent name (used for history and config)")
-    parser.add_argument("--model", default="gpt-5-mini", help="Main model to use")
-    parser.add_argument("--subagent-model", default="gpt-5-mini", help="Subagent model to use")
-    parser.add_argument("--design-model", default="gpt-5.1", help="Design model to use")
+    parser.add_argument("--model", default="gpt-5-mini", help=f"Main model to use. {model_hints}")
+    parser.add_argument("--subagent-model", default="gpt-5-mini", help=f"Subagent model to use. {model_hints}")
+    parser.add_argument("--design-model", default="gpt-5.1", help=f"Design model to use. {model_hints}")
     parser.add_argument("--mcp-server", default="http://localhost:8000/mcp", help="MCP server URL")
     parser.add_argument("--auto-approve", action="store_true", help="Auto-approve all tool calls")
     parser.add_argument("--automatic-context-detection", action="store_true", help="Proactively detect topic drift")
