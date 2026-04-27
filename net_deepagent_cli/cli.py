@@ -8,10 +8,34 @@ from net_deepagent_cli.agent import create_cli_agent
 from net_deepagent_cli.loop import interactive_loop
 from warnings import filterwarnings
 filterwarnings("ignore")
+def get_version() -> str:
+    """Safely extract version from installed package or local pyproject.toml."""
+    try:
+        from importlib.metadata import version, PackageNotFoundError
+        return version("workerxy")
+    except Exception:
+        pass
+
+    try:
+        import tomllib
+        from pathlib import Path
+        
+        root_dir = Path(__file__).resolve().parent.parent
+        pyproject_path = root_dir / "pyproject.toml"
+        
+        if pyproject_path.exists():
+            with pyproject_path.open("rb") as f:
+                data = tomllib.load(f)
+                return data.get("project", {}).get("version", "unknown")
+    except Exception:
+        pass
+        
+    return "unknown"
 
 async def run_cli():
     """Main CLI entry point logic"""
-    parser = argparse.ArgumentParser(description="Net DeepAgent CLI - A powerful terminal interface for network automation.")
+    parser = argparse.ArgumentParser(prog="workerxy", description="Net DeepAgent CLI - A powerful terminal interface for network automation.")
+    parser.add_argument("--version", action="version", version=f"workerxy {get_version()}")
     
     from net_deepagent import AVAILABLE_MODELS
     model_hints = f"Available standard models: {', '.join(AVAILABLE_MODELS.keys())}. (Dynamic prefixes 'airgap-*' and 'ollama-*' are also supported)."

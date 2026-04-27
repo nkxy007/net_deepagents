@@ -17,6 +17,15 @@ filterwarnings("ignore", category=UserWarning)
 def main():
     valid_commands = ["cli", "headless", "discord", "slack", "ui", "mcp", "skill", "diagnose", "vault",
                       "start-cli", "start-headless", "start-gui", "start-all"]
+                      
+    if len(sys.argv) == 2 and sys.argv[1] in ("--version", "-v", "-V"):
+        try:
+            from net_deepagent_cli.cli import get_version
+            print(f"workerxy {get_version()}")
+        except ImportError:
+            print("workerxy (version unknown - failed to import cli)")
+        sys.exit(0)
+        
     if len(sys.argv) < 2 or sys.argv[1] not in valid_commands:
         print(f"Usage: workerxy {{{','.join(valid_commands)}}} [options]")
         sys.exit(1)
