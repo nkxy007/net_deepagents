@@ -45,6 +45,15 @@ services:
     profiles:
       - cli
 
+  init:
+    <<: *workerxy-base
+    container_name: workerxy-init
+    entrypoint: ["workerxy", "init"]
+    tty: true
+    stdin_open: true
+    profiles:
+      - init
+
   headless:
     <<: *workerxy-base
     container_name: workerxy-headless

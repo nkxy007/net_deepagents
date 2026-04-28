@@ -5,10 +5,13 @@ import subprocess
 import time
 import getpass
 from pathlib import Path
+from datetime import date
 from utils.credentials_helper import CredentialsHelper
 
 CREDS_FILE = Path.home() / ".net-deepagent" / "creds.json"
 PREFS_FILE = Path.home() / ".net-deepagent" / "preferences.json"
+SKILL_DIR = Path.home() / ".net-deepagent" / "net-agent" / "skills" / "network-facts-and-procedures"
+SKILL_FILE = SKILL_DIR / "SKILL.md"
 
 def ensure_config_dir():
     CREDS_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -177,6 +180,34 @@ def set_preferences():
         json.dump(prefs, f, indent=4)
         print(f"[*] Preferences saved to {PREFS_FILE}")
 
+def provision_skills():
+    print("\n--- 🧠 Skill Provisioning ---")
+    if not SKILL_FILE.exists():
+        print(f"[*] Creating foundational skill: network-facts-and-procedures...")
+        SKILL_DIR.mkdir(parents=True, exist_ok=True)
+        today = date.today().isoformat()
+        content = f"""---
+description: 'Provides concise network facts, standard operating procedures, and step-by-step
+  runbooks for common networking tasks. Use when an agent needs authoritative quick-reference
+  for routing, switching, VLANs, subnetting, DHCP, NAT, firewall rules, access-control,
+  cabling, diagnostics, troubleshooting, change procedures, or RFC references. Keywords:
+  network facts, procedures, runbook, troubleshooting, VLAN, routing, subnetting,
+  DHCP, NAT, firewall, RFC, configuration, diagnostics.'
+metadata:
+  created: '{today}'
+  last-updated: '{today}'
+  total-updates: 1
+name: network-facts-and-procedures
+---
+"""
+        with open(SKILL_FILE, 'w') as f:
+            f.write(content)
+        print(f"[*] Foundational skill created at {SKILL_FILE}")
+        return True
+    else:
+        print(f"[*] Foundational skill already exists at {SKILL_FILE}")
+        return False
+
 def start_services(features):
     print("\n--- 🛠 Starting Background Services ---")
     
@@ -214,8 +245,18 @@ def start_services(features):
         else:
             print(f" [FAIL] {name} failed to start or exited immediately.")
 
-def show_next_steps():
+def show_next_steps(skill_created=False):
     print("\n--- 🚀 Next Steps ---")
+    
+    if skill_created:
+        print("\n--- 🧠 Skill Provisioning (Important) ---")
+        print("A foundational skill file has been created at:")
+        print(f"  {SKILL_FILE}")
+        print("To enable the agent to interact autonomously, please update it with your specific network details.")
+        print("You can edit the file manually, or run the agent and use:")
+        print("  /skill update")
+        print("in a conversation where your onboarding information is mentioned.\n")
+
     print("To start the WorkerXY Smart CLI (Interactive Terminal):")
     print("  Native: workerxy start-cli")
     print("  Docker: docker compose run --rm cli")
@@ -229,6 +270,7 @@ def main():
         features = gather_features()
         gather_credentials()
         set_preferences()
+        skill_created = provision_skills()
         
         start = input("\n[?] Do you want to start the selected background services now? [Y/n]: ").strip().lower()
         if start != 'n':
@@ -236,7 +278,7 @@ def main():
         else:
             print("[*] Service startup skipped. You can run them manually via `workerxy <component>`.")
             
-        show_next_steps()
+        show_next_steps(skill_created)
             
     except KeyboardInterrupt:
         print("\n[!] Initialization aborted by user.")

@@ -15,7 +15,7 @@ filterwarnings("ignore", category=UserWarning)
 
 
 def main():
-    valid_commands = ["cli", "headless", "discord", "slack", "ui", "mcp", "skill", "diagnose", "vault",
+    valid_commands = ["cli", "headless", "discord", "slack", "ui", "mcp", "skill", "diagnose", "vault", "init",
                       "start-cli", "start-headless", "start-gui", "start-all"]
                       
     if len(sys.argv) == 2 and sys.argv[1] in ("--version", "-v", "-V"):
@@ -37,6 +37,12 @@ def main():
     if command == "cli":
         from net_deepagent_cli.cli import main as cli_main
         cli_main()
+    elif command == "init":
+        try:
+            initializer_path = os.path.join(project_root, "initializer.py")
+            subprocess.run([sys.executable, initializer_path] + sys.argv[1:], cwd=project_root)
+        except KeyboardInterrupt:
+            logger.info("Initializer stopped by user.")
     elif command == "headless":
         from net_deepagent_cli.headless import run_headless, logger as headless_logger
         try:

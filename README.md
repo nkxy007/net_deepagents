@@ -133,6 +133,9 @@ sudo usermod -aG docker $USER && newgrp docker
 # Build the unified image
 docker compose build
 
+# Option 0: Initialize credentials & skills (First time only)
+docker compose run --rm init
+
 # Option 1: Start everything (MCPs, Headless, Discord, UI) in one container
 docker compose up all
 
@@ -170,7 +173,7 @@ cd workerxy
 pip install -e .
 
 # Run the initialization script
-python initializer.py
+workerxy init
 ```
 
 ## 🔐 Credential Security & Vault
@@ -197,6 +200,7 @@ After installation and initialization, start your components using the `workerxy
 | `workerxy cli` | **Direct CLI** | Launch the TUI directly (requires background MCPs). |
 | `workerxy ui` | **Direct UI** | Launch Streamlit directly (requires background MCPs). |
 | `workerxy skill` | **Skill Manager** | CLI tool for creating and managing agent capabilities. |
+| `workerxy init` | **Setup Wizard** | Interactive tool for configuring credentials and skills. |
 
 Extra examples:
  `workerxy cli --model gpt-5.1-medium --subagent-model gpt-5.1-no-thinking --automatic-context-detection --association-window 5`
